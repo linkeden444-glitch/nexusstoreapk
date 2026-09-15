@@ -1,0 +1,57 @@
+name: Build NEXUS Android APK
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build Universal APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Auto-Extract ZIP (If Uploaded)
+        run: |
+          for f in *.zip; do
+            if [ -f "$f" ]; then
+              echo "Extracting archive: $f"
+              unzip -o "$f"
+            fi
+          done
+          echo "=== DIRECTORY TREE AFTER EXTRACTION ==="
+          ls -la
+          ls -la app/src/main/assets/ || true
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Gradle 8.4
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: '8.4'
+
+      - name: Build Android APK
+        run: |
+          gradle assembleDebug --stacktrace --no-daemon
+
+      - name: Prepare Artifact
+        run: |
+          mkdir -p output
+          find app/build/outputs/apk/ -name "*.apk" -exec cp {} output/NEXUS-Store-Universal.apk \;
+          echo "=== COMPILED APK DETAILS ==="
+          ls -lh output/
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: NEXUS-Store-Universal
+          path: output/NEXUS-Store-Universal.apk
+          retention-days: 14
