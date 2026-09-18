@@ -28,8 +28,9 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
+        uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.4'
-      - name: Grant Execute Permission for Gradlew
-        run: chmod +x ./gradlew || true
+      - name: Bootstrap Gradle Wrapper JAR
+        run: |
+          mkdir -p gradle/wrapper
