@@ -1,3 +1,18 @@
+name: Build NEXUS Android APK
+"on":
+  push:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+jobs:
+  build:
+    name: Build Universal APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+      - name: Auto-Extract ZIP (If Uploaded)
+        run: |
           for f in *.zip; do
             if [ -f "$f" ]; then
               echo "Extracting archive: $f"
@@ -18,18 +33,3 @@
           gradle-version: '8.4'
       - name: Grant Execute Permission for Gradlew
         run: chmod +x ./gradlew || true
-      - name: Build Android APK
-        run: |
-          ./gradlew assembleDebug --stacktrace --no-daemon
-      - name: Prepare Artifact
-        run: |
-          mkdir -p output
-          find app/build/outputs/apk/ -name "*.apk" -exec cp {} output/NEXUS-Store-Universal.apk \;
-          echo "=== COMPILED APK DETAILS ==="
-          ls -lh output/
-      - name: Upload APK Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: NEXUS-Store-Universal
-          path: output/NEXUS-Store-Universal.apk
-          retention-days: 14
