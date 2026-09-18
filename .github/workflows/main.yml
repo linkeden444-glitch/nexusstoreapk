@@ -29,6 +29,20 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
+      - name: Generate Signing Keystore
+        run: |
+          mkdir -p ~/.android
+          keytool -genkey -v \
+            -keystore ~/.android/debug.keystore \
+            -alias androiddebugkey \
+            -keyalg RSA \
+            -keysize 2048 \
+            -validity 10000 \
+            -storepass android \
+            -keypass android \
+            -dname "CN=NEXUS Store,O=NEXUS,C=US"
+          echo "Keystore created successfully"
+
       - name: Build Release APK
         run: |
           chmod +x ./gradlew
